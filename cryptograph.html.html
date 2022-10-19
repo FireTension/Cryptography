@@ -1,0 +1,128 @@
+﻿<head>
+	<!-- Load plotly.js into the DOM -->
+	<script src='https://cdn.plot.ly/plotly-2.14.0.min.js'></script>
+</head>
+
+<script>
+// конвертировать строку utf8 в hex-строку
+function toHex(s) {
+  var s = unescape(encodeURIComponent(s));
+  var h = "";
+  for (var i = 0; i < s.length; i++) {
+    hexLetter = s.charCodeAt(i).toString(16);
+	while (hexLetter.length < 2) {
+	  hexLetter = "0" + hexLetter;
+	}
+    h += hexLetter;
+  }
+  return h;
+}
+
+// конвертировать hex-строку в строку utf8
+function fromHex(h) {
+  var s = "";
+  for (var i = 0; i < h.length; i+= 2) {
+    s += String.fromCharCode(parseInt(h.substr(i, 2), 16));
+  }
+  return decodeURIComponent(escape(s));
+}
+
+function handleChange(src) {
+  if (src.value == "1") {
+	document.getElementById('crypting').value = "Шифровать";
+	document.getElementById('EncryptLabel').innerHTML = "Введите текст для шифрования";
+  }
+  else {
+	document.getElementById('crypting').value = "Расшифровать";
+	document.getElementById('EncryptLabel').innerHTML = "Введите текст для расшифрования";
+  }
+}
+
+function mainCrypt () {
+  // Получаем текст для шифрования
+  var text = document.getElementById('cryptedText').value;
+  // Получаем гамму для шифрования
+  var gamma = document.getElementById('Gamma').value;  
+  // Выбор режима работы: 
+  // cryptMode = true - режим шифрования из utf8-строки в hex-строку
+  // cryptMode = false - режим дешифрования из hex-строки в utf8-строку
+  var cryptMode = document.getElementById('CheckBoxEncrypt').checked;    
+  if (cryptMode == false) {
+	text = fromHex(text);
+  }
+  // Зашифрованный/дешифрованный текст
+  var cryptedText = "";
+  for (var i = 0; i < text.length; i++)  {
+	var textLetter = text[i];
+	var gammaLetter = gamma[i % gamma.length];
+	var gammedLetter = "";
+	if (cryptMode == true) {
+	  gammedLetter = (gammaLetter.charCodeAt(0) ^ textLetter.charCodeAt(0)).toString(16);
+	  while (gammedLetter.length < 2) {
+	    gammedLetter = "0" + gammedLetter;
+	  }
+	  gammedLetter = String.fromCharCode(parseInt(gammedLetter, 16));
+	}
+	else {
+	  gammedLetter = (gammaLetter.charCodeAt(0) ^ textLetter.charCodeAt(0)).toString(16);
+	  while (gammedLetter.length < 2) {
+	    gammedLetter = "0" + gammedLetter;
+	  }
+	  gammedLetter = String.fromCharCode(parseInt(gammedLetter, 16));
+	}
+	cryptedText = cryptedText + gammedLetter;
+  }
+  if (cryptMode == true) {
+    cryptedText = toHex(cryptedText);
+  }
+  document.getElementById('cryptedTextArea').value = cryptedText;
+}
+
+</script>
+
+<body>
+
+<form name="myForm">
+
+<!--Выбор режима шифрования-->
+<label><input type = "radio" id = "CheckBoxEncrypt" name = "CryptMode" value="1" checked onchange="handleChange(this);" >Шифровка </label>
+<label><input type = "radio" id = "CheckBoxCrypt" name = "CryptMode" value="2" onchange="handleChange(this);">Расшифровка </label>
+
+<br>
+<br>
+
+<!--ввод текста-->
+<label id = "EncryptLabel" for="story">Введите текст для шифрования</label>
+<br>
+<textarea id="cryptedText" name="story"
+          rows="5" cols="33">
+</textarea>
+
+<br>
+<br>
+
+<!--ввод гаммы-->
+<label for="story">Введите гамму (ключ шифрования)</label>
+<br>
+<textarea id="Gamma" name="story"
+          rows="5" cols="33">
+</textarea>
+<br>
+
+<br>
+
+<input type="button" id="crypting" value="Шифровать" onclick="mainCrypt();" />
+<br>
+<br>
+
+<!--вывод текста-->
+<label for="story">Шифр-текст</label>
+<br>
+<textarea id="cryptedTextArea" name="story"
+          rows="5" cols="33" disabled=false>
+</textarea>
+<br>
+
+</form>
+
+</body>
